@@ -1,0 +1,11 @@
+# Variables d'environnement
+.env
+
+# Dossiers virtuels Python
+.venv/
+venv/
+env/
+
+# Fichiers compilés Python
+__pycache__/
+*.pyc
