@@ -1,6 +1,4 @@
 import { Link } from 'react-router-dom';
-import { useMemo, useState } from 'react';
-import { DashboardGrid } from '../components/DashboardGrid';
 import { useBiPlatform } from '../context/BiPlatformContext';
 
 function toPct(value) {
@@ -41,38 +39,16 @@ function summarizeHealth(dataHealth) {
 
 export default function GlobalDashboardPage() {
   const { dataHealth, globalDashboard } = useBiPlatform();
-  const [periodKey, setPeriodKey] = useState('30d');
   const summary = summarizeHealth(dataHealth);
-  const autoWidgets = globalDashboard || [];
-  const periodFactors = { '7d': 0.85, '30d': 1, '90d': 1.22 };
-
-  const simulatedWidgets = useMemo(() => {
-    const factor = periodFactors[periodKey] || 1;
-    return autoWidgets.map((item) => {
-      if (item.type === 'MetricCard') {
-        return { ...item, value: Number((Number(item.value || 0) * factor).toFixed(2)) };
-      }
-      if (Array.isArray(item.data)) {
-        return {
-          ...item,
-          data: item.data.map((v, i) =>
-            Number((Number(v || 0) * factor * (1 + ((i % 3) - 1) * 0.04)).toFixed(2)),
-          ),
-        };
-      }
-      return item;
-    });
-  }, [autoWidgets, periodKey]);
 
   return (
     <section className="bi-page bi-page-left">
       <h1>Tableau de bord global</h1>
       <p className="bi-lead">
-        Vue exécutive de la qualité de vos données et des analyses automatiques produites par
-        les agents IA.
+        Vue exécutive de la qualité de vos données.
       </p>
 
-      {!dataHealth && (!globalDashboard || globalDashboard.length === 0) && (
+      {!dataHealth && (
         <p className="bi-muted">
           Aucune donnée chargée pour le moment.{' '}
           <Link to="/upload">Téléverser un fichier</Link>
@@ -107,6 +83,13 @@ export default function GlobalDashboardPage() {
               <p className="bi-summary-value">{toPct(summary.avgNullPct)}</p>
             </article>
           </div>
+
+          {dataHealth.dataset_explanation && (
+            <div className="bi-card bi-health-panel" style={{ marginBottom: '1.5rem' }}>
+              <h2>Contexte et domaine des données (Agent IA)</h2>
+              <p style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>{dataHealth.dataset_explanation}</p>
+            </div>
+          )}
 
           <div className="bi-health-panels">
             <div className="bi-card bi-health-panel">
@@ -143,6 +126,10 @@ export default function GlobalDashboardPage() {
                       <th>Type</th>
                       <th>Nuls</th>
                       <th>% nuls</th>
+                      <th>Moyenne</th>
+                      <th>Min</th>
+                      <th>Max</th>
+                      <th>Écart-type</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -152,6 +139,10 @@ export default function GlobalDashboardPage() {
                         <td>{c.dtype}</td>
                         <td>{c.null_count}</td>
                         <td>{c.null_pct}</td>
+                        <td>{c.is_numeric && c.mean != null ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(c.mean) : '-'}</td>
+                        <td>{c.is_numeric && c.min != null ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(c.min) : '-'}</td>
+                        <td>{c.is_numeric && c.max != null ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(c.max) : '-'}</td>
+                        <td>{c.is_numeric && c.std != null ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(c.std) : '-'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -162,24 +153,7 @@ export default function GlobalDashboardPage() {
         </>
       )}
 
-      {autoWidgets.length > 0 && (
-        <>
-          <h2 className="bi-section-title">Insights IA automatiques</h2>
-          <div className="bi-period-filter">
-            {['7d', '30d', '90d'].map((key) => (
-              <button
-                type="button"
-                key={key}
-                onClick={() => setPeriodKey(key)}
-                className={periodKey === key ? 'bi-period-btn active' : 'bi-period-btn'}
-              >
-                {key === '7d' ? '7 jours' : key === '30d' ? '30 jours' : '90 jours'}
-              </button>
-            ))}
-          </div>
-          <DashboardGrid items={simulatedWidgets} periodKey={periodKey} />
-        </>
-      )}
+
     </section>
   );
 }

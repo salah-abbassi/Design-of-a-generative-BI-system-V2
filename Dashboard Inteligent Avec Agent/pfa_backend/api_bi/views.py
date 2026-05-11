@@ -5,7 +5,7 @@ from django.conf import settings
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from .agents import build_workflow
+from .agents import build_workflow, explain_dataset
 from .ingestion import ingest_upload_to_sqlite
 
 app_langgraph = build_workflow()
@@ -53,6 +53,8 @@ def generer_dashboard(request):
         )
 
 
+from django.http import StreamingHttpResponse
+
 @api_view(["POST"])
 def upload_dataset(request):
     uploaded = request.FILES.get("file")
@@ -62,40 +64,50 @@ def upload_dataset(request):
     db_path = str(settings.BI_SQLITE_PATH)
     Path(db_path).parent.mkdir(parents=True, exist_ok=True)
 
-    try:
-        _, data_health = ingest_upload_to_sqlite(uploaded, db_path)
-    except ValueError as e:
-        return Response({"erreur": str(e)}, status=400)
-    except Exception as e:
-        print(f"Ingestion : {e}")
-        return Response({"erreur": "Échec de l'ingestion du fichier."}, status=500)
+    def generate_progress():
+        import json
+        try:
+            yield json.dumps({"step": "ingestion", "progress": 15}) + "\n"
+            _, data_health = ingest_upload_to_sqlite(uploaded, db_path)
+            
+            yield json.dumps({"step": "explanation", "progress": 35}) + "\n"
+            explanation = explain_dataset()
+            data_health["dataset_explanation"] = explanation
 
-    inputs = {
-        **_initial_graph_state(),
-        "mode": "auto",
-        "question_utilisateur": "",
-    }
+            yield json.dumps({"step": "analyst", "progress": 50}) + "\n"
+            inputs = {
+                **_initial_graph_state(),
+                "mode": "auto",
+                "question_utilisateur": "",
+            }
 
-    try:
-        resultat = app_langgraph.invoke(inputs)
-        dj = (resultat.get("dashboard_json") or "").strip()
-        payload = {"data_health": data_health}
-        if not dj:
-            payload["erreur"] = (
-                "Ingestion réussie mais l'auto-analyse n'a pas produit de dashboard."
-            )
-            payload["dashboard"] = []
-            return Response(payload, status=200)
-        json_final = json.loads(dj)
-        payload.update(json_final)
-        return Response(payload, status=200)
-    except Exception as e:
-        print(f"Auto-analyse : {e}")
-        return Response(
-            {
-                "data_health": data_health,
-                "erreur": "Ingestion réussie ; échec de l'auto-analyse.",
-                "dashboard": [],
-            },
-            status=500,
-        )
+            final_state = {}
+            for output in app_langgraph.stream(inputs):
+                node_name = list(output.keys())[0]
+                final_state.update(list(output.values())[0])
+                
+                if node_name == "analyst":
+                    yield json.dumps({"step": "engineer", "progress": 65}) + "\n"
+                elif node_name == "engineer":
+                    yield json.dumps({"step": "designer", "progress": 85}) + "\n"
+                elif node_name == "designer":
+                    yield json.dumps({"step": "finalizing", "progress": 95}) + "\n"
+
+            dj = (final_state.get("dashboard_json") or "").strip()
+            payload = {"data_health": data_health, "progress": 100, "step": "done"}
+            if not dj:
+                payload["erreur"] = "Ingestion réussie mais l'auto-analyse n'a pas produit de dashboard."
+                payload["dashboard"] = []
+            else:
+                json_final = json.loads(dj)
+                payload.update(json_final)
+                
+            yield json.dumps(payload) + "\n"
+            
+        except ValueError as e:
+            yield json.dumps({"erreur": str(e)}) + "\n"
+        except Exception as e:
+            print(f"Erreur d'ingestion/analyse: {e}")
+            yield json.dumps({"erreur": "Échec du processus. Consultez les logs serveur."}) + "\n"
+
+    return StreamingHttpResponse(generate_progress(), content_type="application/x-ndjson")

@@ -48,14 +48,21 @@ def compute_data_health(df: pd.DataFrame) -> dict:
     for col in df.columns:
         null_count = int(df[col].isna().sum())
         null_pct = round(100.0 * null_count / n_rows, 2) if n_rows else 0.0
-        columns_info.append(
-            {
-                "name": str(col),
-                "dtype": str(df[col].dtype),
-                "null_count": null_count,
-                "null_pct": null_pct,
-            }
-        )
+        is_numeric = pd.api.types.is_numeric_dtype(df[col])
+        col_info = {
+            "name": str(col),
+            "dtype": str(df[col].dtype),
+            "null_count": null_count,
+            "null_pct": null_pct,
+            "is_numeric": bool(is_numeric),
+        }
+        if is_numeric:
+            col_info["mean"] = float(df[col].mean()) if not pd.isna(df[col].mean()) else None
+            col_info["min"] = float(df[col].min()) if not pd.isna(df[col].min()) else None
+            col_info["max"] = float(df[col].max()) if not pd.isna(df[col].max()) else None
+            col_info["std"] = float(df[col].std()) if not pd.isna(df[col].std()) else None
+            
+        columns_info.append(col_info)
     columns_info.sort(key=lambda x: x["null_pct"], reverse=True)
 
     datetime_ranges = []

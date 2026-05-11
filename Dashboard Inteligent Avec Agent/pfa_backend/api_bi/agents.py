@@ -56,17 +56,18 @@ auto_analyst_prompt = ChatPromptTemplate.from_messages(
 
 RÈGLES STRICTES :
 1. Tu ne vois que le schéma SQL fourni. Ne génère pas de SQL.
-2. Propose EXACTEMENT 5 KPIs pertinents pour un tableau de bord exécutif de synthèse.
-3. Si la table dataset_utilisateur est présente, priorise TOUJOURS cette table (données fraîchement chargées par l'utilisateur) pour tous les KPIs.
-4. Sinon, utilise les tables disponibles dans le schéma.
-5. Chaque KPI doit être calculable avec les colonnes existantes ; indique les colonnes nécessaires en une courte phrase par KPI.""",
+2. Propose EXACTEMENT entre 4 et 10 KPIs pertinents pour un tableau de bord exécutif de synthèse.
+3. Inclus une variété de visualisations (chiffres globaux, répartitions, classements) et SI une colonne de date est disponible, inclus au moins une analyse d'évolution temporelle (ex: par mois).
+4. Si la table dataset_utilisateur est présente, priorise TOUJOURS cette table (données fraîchement chargées par l'utilisateur) pour tous les KPIs.
+5. Sinon, utilise les tables disponibles dans le schéma.
+6. Chaque KPI doit être calculable avec les colonnes existantes ; indique les colonnes nécessaires en une courte phrase par KPI.""",
         ),
         (
             "user",
             """Schéma de la base de données :
 {schema}
 
-Propose exactement 5 KPIs de synthèse.""",
+Propose entre 4 et 10 KPIs de synthèse.""",
         ),
     ]
 )
@@ -221,37 +222,42 @@ designer_prompt = ChatPromptTemplate.from_messages(
             """Tu es un expert en Data Visualization et conception d'interfaces.
 Ton rôle est de prendre des données métier brutes et de concevoir la structure JSON d'un Dashboard pour une application React.
 
-Tu as accès à 3 types de composants graphiques :
+Tu as accès à 4 types de composants graphiques :
 - "MetricCard" : Pour un chiffre unique ou un KPI global (ex: Chiffre d'affaires total).
 - "BarChart" : Pour comparer des éléments (ex: Ventes par région, Top 3).
 - "PieChart" : Pour montrer une répartition ou des pourcentages.
+- "LineChart" : Pour montrer une évolution dans le temps (ex: Ventes par mois).
 
 RÈGLES STRICTES :
 1. Renvoie UNIQUEMENT un objet JSON valide, sans aucune balise markdown (pas de ```json).
 2. Adapte le format des données selon le composant choisi.
-3. Utilise exactement les types "MetricCard", "BarChart" ou "PieChart" (casse respectée).
-4. Le JSON doit suivre cette structure :
+3. Utilise exactement les types "MetricCard", "BarChart", "PieChart" ou "LineChart" (casse respectée).
+4. Ajoute OBLIGATOIREMENT un champ "description" pour chaque composant. Ce champ doit contenir une courte phrase explicative du KPI (qui sera affichée au survol par l'utilisateur).
+5. Le JSON doit suivre cette structure :
 {{
     "dashboard": [
         {{
             "id": "kpi_1",
             "type": "MetricCard",
             "title": "Chiffre d'affaires total",
+            "description": "Montant total généré sur l'ensemble des ventes.",
             "value": 30867904.43
         }},
         {{
             "id": "chart_1",
             "type": "BarChart",
             "title": "Top 3 Régions",
+            "description": "Comparaison du chiffre d'affaires entre les meilleures régions.",
             "labels": ["Nord", "Centre", "Sud"],
             "data": [7350978, 6643460, 5000000]
         }},
         {{
             "id": "chart_2",
-            "type": "PieChart",
-            "title": "Répartition",
-            "labels": ["A", "B", "C"],
-            "data": [30, 45, 25]
+            "type": "LineChart",
+            "title": "Évolution mensuelle",
+            "description": "Tendance temporelle des indicateurs mois par mois.",
+            "labels": ["Jan", "Fev", "Mar"],
+            "data": [100, 150, 120]
         }}
     ]
 }}""",
@@ -292,6 +298,42 @@ def build_workflow():
     )
     workflow.add_edge("designer", END)
     return workflow.compile()
+
+
+explainer_prompt = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            """Tu es un Data Scientist expert.
+Ton rôle est d'analyser le schéma d'une base de données et de rédiger une synthèse courte expliquant :
+1. De quel domaine ou métier proviennent très probablement ces données.
+2. Quelles informations clés on peut y trouver.
+
+RÈGLES STRICTES :
+1. Rédige un texte clair et professionnel (1 ou 2 paragraphes).
+2. Ne génère pas de code, ni de JSON, juste le texte d'explication.
+3. Sois précis sur le potentiel d'analyse de ces données.""",
+        ),
+        (
+            "user",
+            """Voici le schéma de la base de données :
+{schema}
+
+Rédige l'explication demandée.""",
+        ),
+    ]
+)
+
+
+def explain_dataset(schema: str = None) -> str:
+    print("--- AGENT DATA EXPLAINER ---")
+    if schema is None:
+        schema = get_database_schema()
+    chain = explainer_prompt | llm
+    
+    response = chain.invoke({"schema": schema})
+    print(f"EXPLAINATION :--> \n{response.content}\n")
+    return response.content.strip()
 
 
 if __name__ == "__main__":

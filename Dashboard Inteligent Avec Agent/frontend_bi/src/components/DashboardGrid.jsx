@@ -23,6 +23,7 @@ function normalizeWidgetType(type) {
   if (t === 'metriccard') return 'MetricCard';
   if (t === 'barchart') return 'BarChart';
   if (t === 'piechart') return 'PieChart';
+  if (t === 'linechart') return 'LineChart';
   return type;
 }
 
@@ -84,11 +85,12 @@ export function DashboardGrid({ items, periodKey = '30d' }) {
         const strokeColor = trendPct >= 5 ? '#10b981' : trendPct <= -5 ? '#ef4444' : '#f59e0b';
 
         if (type === 'MetricCard') {
-          const sparkData = sparklineData(element.id || element.title, element.value);
           return (
             <div key={element.id} className="bi-card bi-metric">
-              <div className="bi-card-header">
-                <h3>{element.title}</h3>
+              <div className="bi-card-header" title={element.description}>
+                <h3 style={{ cursor: element.description ? 'help' : 'default' }}>
+                  {element.title} {element.description && 'ℹ️'}
+                </h3>
                 <small className="bi-card-trend">
                   Tendance {periodKey}: {trendPct >= 0 ? '+' : ''}
                   {trendPct}%
@@ -97,19 +99,6 @@ export function DashboardGrid({ items, periodKey = '30d' }) {
               <p className="bi-metric-value">
                 {new Intl.NumberFormat('fr-FR').format(element.value)}
               </p>
-              <div className="bi-sparkline">
-                <ResponsiveContainer width="100%" height={45}>
-                  <LineChart data={sparkData}>
-                    <Line
-                      type="monotone"
-                      dataKey="v"
-                      stroke={strokeColor}
-                      strokeWidth={2}
-                      dot={false}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
             </div>
           );
         }
@@ -118,8 +107,10 @@ export function DashboardGrid({ items, periodKey = '30d' }) {
           const chartData = formatBarData(element.labels, element.data);
           return (
             <div key={element.id} className="bi-card bi-chart">
-              <div className="bi-card-header">
-                <h3>{element.title}</h3>
+              <div className="bi-card-header" title={element.description}>
+                <h3 style={{ cursor: element.description ? 'help' : 'default' }}>
+                  {element.title} {element.description && 'ℹ️'}
+                </h3>
                 <small className="bi-card-trend">
                   Tendance {periodKey}: {trendPct >= 0 ? '+' : ''}
                   {trendPct}%
@@ -150,8 +141,10 @@ export function DashboardGrid({ items, periodKey = '30d' }) {
           const pieData = formatPieData(element.labels, element.data);
           return (
             <div key={element.id} className="bi-card bi-chart">
-              <div className="bi-card-header">
-                <h3>{element.title}</h3>
+              <div className="bi-card-header" title={element.description}>
+                <h3 style={{ cursor: element.description ? 'help' : 'default' }}>
+                  {element.title} {element.description && 'ℹ️'}
+                </h3>
                 <small className="bi-card-trend">
                   Tendance {periodKey}: {trendPct >= 0 ? '+' : ''}
                   {trendPct}%
@@ -183,6 +176,40 @@ export function DashboardGrid({ items, periodKey = '30d' }) {
                   />
                   <Legend wrapperStyle={{ color: CHART_TEXT_COLOR }} />
                 </PieChart>
+              </ResponsiveContainer>
+            </div>
+          );
+        }
+
+        if (type === 'LineChart') {
+          const chartData = formatBarData(element.labels, element.data);
+          return (
+            <div key={element.id} className="bi-card bi-chart">
+              <div className="bi-card-header" title={element.description}>
+                <h3 style={{ cursor: element.description ? 'help' : 'default' }}>
+                  {element.title} {element.description && 'ℹ️'}
+                </h3>
+                <small className="bi-card-trend">
+                  Tendance {periodKey}: {trendPct >= 0 ? '+' : ''}
+                  {trendPct}%
+                </small>
+              </div>
+              <ResponsiveContainer width="100%" height={320}>
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
+                  <XAxis dataKey="name" tick={{ fill: CHART_TEXT_COLOR, fontSize: 12 }} />
+                  <YAxis tick={{ fill: CHART_TEXT_COLOR, fontSize: 12 }} />
+                  <Tooltip
+                    formatter={(value) => new Intl.NumberFormat('fr-FR').format(value)}
+                    contentStyle={{
+                      background: '#ffffff',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '8px',
+                      color: '#0f172a',
+                    }}
+                  />
+                  <Line type="monotone" dataKey="valeur" stroke="#8884d8" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 8 }} />
+                </LineChart>
               </ResponsiveContainer>
             </div>
           );
