@@ -42,17 +42,33 @@ export default function GlobalDashboardPage() {
   const summary = summarizeHealth(dataHealth);
 
   return (
-    <section className="bi-page bi-page-left">
-      <h1>Tableau de bord global</h1>
-      <p className="bi-lead">
-        Vue exécutive de la qualité de vos données.
-      </p>
+    <section className="bi-page">
+      <div style={{ textAlign: 'center', marginBottom: '3rem', paddingTop: '1rem' }}>
+        <h1 style={{ fontSize: '2.5rem', lineHeight: '1.2', paddingBottom: '0.1em', background: 'linear-gradient(to right, #6366f1, #00ffd0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: '0.5rem' }}>
+          Vue Exécutive
+        </h1>
+        <p className="bi-lead" style={{ margin: '0 auto', fontSize: '1.1rem', maxWidth: '600px' }}>
+          Bilan de santé et de qualité de vos données avant analyse.
+        </p>
+      </div>
 
       {!dataHealth && (
-        <p className="bi-muted">
-          Aucune donnée chargée pour le moment.{' '}
-          <Link to="/upload">Téléverser un fichier</Link>
-        </p>
+        <div style={{ textAlign: 'center', padding: '4rem', background: 'rgba(15, 23, 42, 0.4)', borderRadius: '16px', border: '1px dashed rgba(148, 163, 184, 0.2)' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📁</div>
+          <p className="bi-muted" style={{ fontSize: '1.1rem', marginBottom: '1.5rem' }}>Aucune donnée chargée pour le moment.</p>
+          <Link to="/upload" style={{
+            display: 'inline-block',
+            padding: '0.8rem 2rem',
+            background: 'linear-gradient(135deg, #6366f1, #22c55e)',
+            color: '#fff',
+            textDecoration: 'none',
+            borderRadius: '999px',
+            fontWeight: 'bold',
+            boxShadow: '0 4px 15px rgba(34, 197, 94, 0.3)'
+          }}>
+            Téléverser un fichier
+          </Link>
+        </div>
       )}
 
       {summary && (

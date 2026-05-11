@@ -69,7 +69,7 @@ function App() {
       <div className="bi-aurora bi-aurora-b" />
       <div className="bi-aurora bi-aurora-c" />
 
-      <div className="bi-app">
+      <div className={`bi-app ${isMessengerOpen ? 'bi-app-shifted' : ''}`}>
         <header className="bi-header">
           <div className="bi-brand-wrap">
             <div className="bi-brand-mark" aria-hidden="true">

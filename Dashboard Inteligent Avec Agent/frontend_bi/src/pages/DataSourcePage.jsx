@@ -121,7 +121,7 @@ export default function DataSourcePage() {
   return (
     <section className="bi-page" style={{ maxWidth: '800px', margin: '0 auto', paddingTop: '2rem' }}>
       <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-        <h1 style={{ fontSize: '2.8rem', background: 'linear-gradient(to right, #6366f1, #22c55e)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: '1rem' }}>
+        <h1 style={{ fontSize: '2.8rem', lineHeight: '1.2', paddingBottom: '0.1em', background: 'linear-gradient(to right, #6366f1, #22c55e)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: '1rem' }}>
           Connectez vos données
         </h1>
         <p className="bi-lead" style={{ margin: '0 auto', fontSize: '1.1rem' }}>

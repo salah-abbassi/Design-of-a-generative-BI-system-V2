@@ -61,6 +61,11 @@
   position: relative;
   z-index: 1;
   overflow: visible;
+  transition: padding-right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bi-app.bi-app-shifted {
+  padding-right: 420px;
 }
 
 .bi-header {
@@ -445,6 +450,10 @@
     padding: 1rem 0.9rem 2rem;
   }
 
+  .bi-app.bi-app-shifted {
+    padding-right: 0;
+  }
+
   .bi-header {
     gap: 0.7rem;
     margin-bottom: 1rem;
@@ -553,23 +562,27 @@
 }
 
 .bi-card {
-  border: 1px solid rgba(148, 163, 184, 0.28);
-  border-radius: 14px;
-  padding: 1rem 1.25rem;
-  background: linear-gradient(155deg, rgba(255, 255, 255, 0.9), rgba(241, 245, 249, 0.82));
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 16px;
+  padding: 1.2rem 1.5rem;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
 .bi-metric {
   min-width: 200px;
   grid-column: span 3;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(224, 231, 255, 0.86));
+  background: rgba(30, 41, 59, 0.4);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 16px;
 }
 
 .bi-metric h3 {
   margin: 0 0 0.5rem;
   font-size: 0.95rem;
-  color: #0f172a;
+  color: #94a3b8;
 }
 
 .bi-card-header {
@@ -582,7 +595,7 @@
 
 .bi-card-header h3 {
   margin: 0;
-  color: #0b1220;
+  color: #f8fafc;
 }
 
 .bi-card-trend {
@@ -594,9 +607,12 @@
 
 .bi-metric-value {
   margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1e3a8a;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #f8fafc;
+  background: linear-gradient(to right, #6366f1, #22c55e);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .bi-sparkline {
@@ -608,18 +624,21 @@
 .bi-chart {
   grid-column: span 6;
   min-height: 360px;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(219, 234, 254, 0.84));
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 16px;
 }
 
 .bi-chart h3 {
   margin: 0 0 0.75rem;
   text-align: center;
-  font-size: 1rem;
-  color: #0f172a;
+  font-size: 1.1rem;
+  color: #f8fafc;
 }
 
 .bi-chart .recharts-text {
-  fill: #334155;
+  fill: #94a3b8;
 }
 
 .bi-health h2,
@@ -635,24 +654,26 @@
 }
 
 .bi-summary-card {
-  border-radius: 12px;
-  border: 1px solid rgba(148, 163, 184, 0.24);
-  padding: 0.85rem 1rem;
-  background: linear-gradient(155deg, rgba(255, 255, 255, 0.94), rgba(238, 242, 255, 0.84));
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  padding: 1rem 1.25rem;
+  background: rgba(30, 41, 59, 0.4);
+  backdrop-filter: blur(10px);
 }
 
 .bi-summary-label {
   margin: 0;
-  color: #1e293b;
-  font-size: 0.8rem;
+  color: #94a3b8;
+  font-size: 0.85rem;
   font-weight: 600;
+  text-transform: uppercase;
 }
 
 .bi-summary-value {
-  margin: 0.2rem 0 0;
-  font-size: 1.35rem;
-  color: #0b1220;
-  font-weight: 650;
+  margin: 0.4rem 0 0;
+  font-size: 1.6rem;
+  color: #f8fafc;
+  font-weight: 700;
 }
 
 .bi-health-panels {
@@ -664,24 +685,24 @@
 
 .bi-health-panel h2 {
   margin: 0 0 0.75rem;
-  font-size: 1.1rem;
-  color: #0b1220;
+  font-size: 1.2rem;
+  color: #f8fafc;
 }
 
 .bi-health-panel h3 {
   margin: 0.9rem 0 0.45rem;
-  font-size: 0.95rem;
-  color: #1e293b;
+  font-size: 1rem;
+  color: #cbd5e1;
 }
 
 .bi-health-list {
   margin: 0.5rem 0 1rem;
   padding-left: 1.25rem;
-  color: #0f172a;
+  color: #f8fafc;
 }
 
 .bi-health-list li {
-  color: #0f172a;
+  color: #cbd5e1;
 }
 
 .bi-health-panel .bi-muted {
@@ -698,23 +719,23 @@
   border-collapse: collapse;
   table-layout: fixed;
   font-size: 0.9rem;
-  background: rgba(255, 255, 255, 0.88);
+  background: transparent;
   border-radius: 10px;
   overflow: hidden;
 }
 
 .bi-table th,
 .bi-table td {
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  padding: 0.42rem 0.55rem;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  padding: 0.6rem 0.8rem;
   text-align: left;
-  color: #0f172a;
+  color: #cbd5e1;
   word-break: break-word;
 }
 
 .bi-table th {
-  background: rgba(226, 232, 240, 0.9);
-  color: #0f172a;
+  background: rgba(30, 41, 59, 0.8);
+  color: #f8fafc;
   font-weight: 600;
 }
 
