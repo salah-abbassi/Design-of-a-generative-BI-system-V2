@@ -20,7 +20,7 @@ function App() {
       text: 'Bonjour. Posez votre question métier ici et je génère les KPIs et graphiques.',
     },
   ]);
-  const { chatDashboard, setChatDashboard } = useBiPlatform();
+
 
   const askAi = async () => {
     const q = question.trim();
@@ -42,7 +42,6 @@ function App() {
         ]);
       } else {
         const dashboardItems = data.dashboard ?? [];
-        setChatDashboard(dashboardItems);
         setMessages((prev) => [
           ...prev,
           {
@@ -51,6 +50,7 @@ function App() {
               dashboardItems.length > 0
                 ? 'Analyse terminée. Les résultats sont affichés ci-dessous.'
                 : 'Analyse terminée, mais aucun widget exploitable n’a été généré.',
+            dashboard: dashboardItems
           },
         ]);
       }
@@ -150,18 +150,19 @@ function App() {
           </div>
           <div className="bi-messenger-body">
             {messages.map((message, index) => (
-              <div
-                key={`${message.role}-${index}`}
-                className={message.role === 'user' ? 'bi-message bi-message-user' : 'bi-message bi-message-ai'}
-              >
-                {message.text}
+              <div key={`${message.role}-${index}`} style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '1rem' }}>
+                <div
+                  className={message.role === 'user' ? 'bi-message bi-message-user' : 'bi-message bi-message-ai'}
+                >
+                  {message.text}
+                </div>
+                {message.dashboard && message.dashboard.length > 0 && (
+                  <div className="bi-chat-dashboard-preview" style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'rgba(15, 23, 42, 0.4)', borderRadius: '12px', border: '1px solid rgba(148, 163, 184, 0.15)' }}>
+                    <DashboardGrid items={message.dashboard} />
+                  </div>
+                )}
               </div>
             ))}
-            {chatDashboard?.length > 0 && (
-              <div className="bi-chat-dashboard-preview">
-                <DashboardGrid items={chatDashboard} />
-              </div>
-            )}
           </div>
           <div className="bi-messenger-footer">
             <div className="bi-messenger-input-wrap">

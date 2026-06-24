@@ -14,8 +14,8 @@ import {
   YAxis,
 } from 'recharts';
 
-const PIE_COLORS = ['#84d891', '#00f15c', '#58ffe6', '#42adff', '#0088fe', '#00ffd0'];
-const CHART_TEXT_COLOR = '#00ff1a';
+const PIE_COLORS = ['#7300ff', '#4400f1', '#081963', '#42adff', '#00c3fe', '#00c8ff'];
+const CHART_TEXT_COLOR = '#7300ff';
 
 function normalizeWidgetType(type) {
   if (!type || typeof type !== 'string') return '';

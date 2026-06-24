@@ -336,17 +336,80 @@ def explain_dataset(schema: str = None) -> str:
     return response.content.strip()
 
 
-if __name__ == "__main__":
-    app = build_workflow()
-    inputs = {
-        "mode": "conversational",
-        "question_utilisateur": "Je veux une analyse de nos ventes globales et savoir quelles sont nos meilleures régions.",
-        "schema_db": "",
-        "kpis_proposes": "",
-        "donnees_brutes": {},
-        "dashboard_json": "",
-        "erreurs": "",
-        "tentatives": 0,
+column_cleaner_prompt = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            """Tu es un Data Engineer expert en qualité de données.
+Analyse les statistiques des colonnes et propose celles à SUPPRIMER car inutiles pour l'analyse BI.
+
+Critères (par ordre de priorité) :
+- Colonnes quasi vides (>=80% de valeurs nulles)
+- Colonnes constantes ou quasi constantes (is_constant=true ou unique_ratio très faible)
+- Identifiants techniques redondants (id, uuid, hash) sans valeur analytique
+- Colonnes dupliquées ou fortement corrélées à une autre
+- Métadonnées techniques hors sujet (checksum, version fixe, etc.)
+
+RÈGLES STRICTES :
+1. Réponds UNIQUEMENT en JSON valide, sans markdown ni texte autour.
+2. Ne propose PAS de supprimer une colonne clé métier (date, montant, catégorie, région, client, produit...).
+3. Classe chaque proposition : "high" | "medium" | "low".
+4. Si aucune colonne à supprimer, renvoie une liste vide.
+
+Format exact :
+{{
+  "columns_to_drop": [
+    {{"name": "nom_colonne", "reason": "explication courte", "confidence": "high"}}
+  ],
+  "summary": "Phrase de synthèse en français"
+}}""",
+        ),
+        (
+            "user",
+            """Statistiques du dataset :
+{data_health}
+
+Échantillon ({sample_rows_count} premières lignes) :
+{sample_rows}
+
+Propose les colonnes à supprimer.""",
+        ),
+    ]
+)
+
+
+def suggest_columns_to_drop(data_health: dict, sample_rows: str) -> dict:
+    print("--- AGENT COLUMN CLEANER ---")
+    chain = column_cleaner_prompt | llm
+    response = chain.invoke(
+        {
+            "data_health": json.dumps(data_health, ensure_ascii=False, indent=2),
+            "sample_rows": sample_rows,
+            "sample_rows_count": min(5, data_health.get("row_count", 5)),
+        }
+    )
+    clean = response.content.replace("```json", "").replace("```", "").strip()
+    try:
+        result = json.loads(clean)
+    except json.JSONDecodeError as e:
+        print(f"JSON invalide du column cleaner : {e}")
+        return {
+            "columns_to_drop": [],
+            "summary": "L'agent n'a pas pu produire de suggestions structurées.",
+        }
+
+    columns = result.get("columns_to_drop", [])
+    valid_names = {c["name"] for c in data_health.get("columns", [])}
+    filtered = [
+        c for c in columns
+        if isinstance(c, dict)
+        and c.get("name") in valid_names
+        and c.get("confidence") in ("high", "medium", "low")
+    ]
+    return {
+        "columns_to_drop": filtered,
+        "summary": result.get("summary", ""),
     }
-    resultat = app.invoke(inputs)
-    print(resultat.get("dashboard_json", ""))
+
+
+

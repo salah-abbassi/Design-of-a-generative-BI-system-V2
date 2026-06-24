@@ -1,0 +1,110 @@
+%==============================================================================
+% CHAPITRE 1 : CONTEXTE ET PROBLÉMATIQUE
+%==============================================================================
+\chapter{Contexte et Problématique}
+
+\section{Contexte général}
+
+\subsection{L'évolution de la Business Intelligence}
+
+La Business Intelligence a connu une transformation profonde au cours des deux dernières décennies. Les premières générations d'outils décisionnels reposaient sur des architectures centralisées, nécessitant l'intervention d'équipes techniques spécialisées pour extraire, transformer et charger les données (processus ETL), puis pour concevoir des rapports et des tableaux de bord statiques. Ces systèmes, bien que robustes, souffraient d'un délai de mise en production important et d'un manque de flexibilité face à l'évolution rapide des besoins métier.
+
+L'avènement des outils de BI self-service, incarnés par des solutions comme Microsoft Power BI, Tableau et Google Looker Studio, a marqué une rupture significative en permettant aux utilisateurs métier de créer leurs propres visualisations sans dépendre exclusivement des équipes informatiques. Néanmoins, ces outils conservent une complexité inhérente : la maîtrise des langages de requête, la compréhension des modèles de données et les principes de visualisation efficace demeurent des compétences spécialisées.
+
+\subsection{L'essor des modèles de langage et des agents IA}
+
+L'année 2023 a marqué un tournant décisif avec la démocratisation des modèles de langage à grande échelle (LLM). Des modèles tels que GPT-4, Claude, Llama et Qwen ont démontré des capacités remarquables en compréhension du langage naturel, en raisonnement logique et en génération de code. Ces capacités ouvrent la voie à un nouveau paradigme d'interaction avec les systèmes décisionnels : le \textit{Generative BI}, où l'utilisateur formule ses besoins en langage naturel et le système génère automatiquement les analyses correspondantes.
+
+Plus récemment, le concept d'agents IA autonomes a gagné en maturité. Contrairement à un simple appel LLM ponctuel, un agent est capable de planifier, d'exécuter des actions, d'observer les résultats et d'ajuster sa stratégie de manière itérative. Les frameworks d'orchestration multi-agents, notamment LangGraph développé par LangChain, permettent de composer des workflows complexes où plusieurs agents spécialisés collaborent pour résoudre des tâches sophistiquées.
+
+% \subsection{Cadre du projet}
+
+% Ce projet s'inscrit dans le cadre du projet de fin d'année de la deuxième année du cycle d'ingénieur, filière Business Intelligence \& Analytics, à l'École Nationale Supérieure d'Informatique et d'Analyse des Systèmes (ENSIAS), Université Mohammed V de Rabat. Il est supervisé par le Professeur Y.~ALAMI et réalisé par Salah Eddine ABBASSI et Selimane Ait Si Elmadani durant l'année universitaire 2025--2026.
+
+\section{Étude de l'existant}
+
+\subsection{Outils de BI traditionnels}
+
+Les solutions de BI traditionnelles dominent le marché depuis plus d'une décennie. Le tableau~\ref{tab:bi-tools} compare les principales solutions disponibles.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.5} % Aère le tableau en ajoutant de l'espace vertical
+\caption{Comparaison des outils de BI traditionnels}
+\label{tab:bi-tools}
+\begin{tabularx}{\textwidth}{
+    >{\bfseries}l 
+    >{\raggedright\arraybackslash}X 
+    >{\centering\arraybackslash}p{2.5cm} 
+    >{\centering\arraybackslash}p{3cm}
+}
+\toprule
+\textbf{Outil} & \textbf{Points forts} & \textbf{Complexité} & \textbf{Coût} \\
+\midrule
+Power BI      & Intégration Microsoft, DAX puissant, communauté large & Élevée  & Licence Pro     \\
+Tableau       & Visualisations avancées, connecteurs multiples        & Moyenne & Licence élevée  \\
+Qlik Sense    & Moteur associatif, exploration libre                  & Moyenne & Licence Pro     \\
+Looker Studio & Gratuit, intégration Google                           & Faible  & Gratuit / Cloud \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Ces outils présentent tous une limite commune : ils exigent de l'utilisateur une connaissance préalable de la structure des données et une maîtrise des outils de requêtage et de visualisation.
+
+% \subsection{Solutions de BI générative}
+
+% Plusieurs solutions émergentes tentent d'intégrer des capacités de langage naturel dans les outils de BI :
+
+% \textbf{Julius AI} et \textbf{ChatGPT Code Interpreter} permettent d'analyser des données via des conversations en langage naturel, mais reposent exclusivement sur des API cloud propriétaires, ce qui pose des problèmes de confidentialité pour les données sensibles.
+
+% \textbf{Microsoft Copilot for Power BI} intègre des capacités de génération de rapports via des prompts, mais reste limité à l'écosystème Microsoft et nécessite une licence Premium coûteuse.
+
+% \textbf{Les approches académiques Text-to-SQL} telles que DIN-SQL et DAIL-SQL ont démontré des performances prometteuses sur des benchmarks standardisés (Spider), mais restent cantonnées à la génération de requêtes sans production de visualisations structurées.
+
+\subsection{Positionnement de SmartBI}
+
+SmartBI se distingue des solutions existantes par plusieurs caractéristiques clés :
+
+\begin{itemize}[leftmargin=2cm]
+    \item \textbf{Pipeline complet} : de l'ingestion des données à la visualisation interactive, en une seule opération.
+    \item \textbf{Exécution locale} : les modèles de langage sont exécutés sur la machine de l'utilisateur via Ollama, sans transfert de données vers le cloud.
+    \item \textbf{Architecture multi-agents} : séparation claire des responsabilités (analyse, requêtage, design) avec mécanisme d'auto-correction.
+    \item \textbf{Double mode d'interaction} : chargement automatique de fichiers et dialogue en langage naturel.
+\end{itemize}
+
+\section{Problématique}
+
+Malgré la disponibilité d'outils de BI puissants, plusieurs défis persistent dans le paysage décisionnel actuel :
+
+\textbf{Barrière technique persistante.} Même les outils de BI self-service exigent que les utilisateurs maîtrisent des concepts tels que les jointures entre tables, les fonctions d'agrégation, les mesures calculées et les bonnes pratiques de visualisation. Pour un décideur non technique, formuler une question analytique simple requiert de comprendre la structure de la base de données et de savoir écrire une requête SQL.
+
+\textbf{Temps de mise en production.} La création d'un tableau de bord professionnel implique un cycle comprenant la connexion aux sources, le nettoyage, la modélisation, la création des visualisations et leur mise en page. Ce processus peut nécessiter plusieurs heures voire plusieurs jours.
+
+\textbf{Manque d'adaptabilité contextuelle.} Les outils traditionnels ne possèdent pas de capacité intrinsèque à comprendre la nature des données chargées et à proposer automatiquement des analyses pertinentes.
+
+\textbf{Dépendance aux services cloud.} La majorité des solutions de BI générative émergentes reposent sur des API cloud propriétaires, posant des enjeux de confidentialité, de latence réseau et de coûts récurrents.
+
+Face à ces constats, nous formulons la problématique centrale suivante :
+
+\begin{quote}
+\textit{Comment concevoir une plateforme de Business Intelligence capable de transformer automatiquement des données brutes en tableaux de bord interactifs pertinents, en permettant à l'utilisateur d'interagir en langage naturel, tout en garantissant la souveraineté des données grâce à l'utilisation de modèles de langage locaux~?}
+\end{quote}
+
+\section{Objectifs du projet}
+
+Pour répondre à cette problématique, nous nous sommes fixé les objectifs suivants :
+
+\begin{enumerate}[label=\textbf{O\arabic*.}, leftmargin=2cm]
+    \item \textbf{Concevoir un pipeline multi-agents intelligent} capable d'analyser automatiquement un jeu de données et de produire un tableau de bord structuré.
+    \item \textbf{Permettre l'interaction en langage naturel}, où l'utilisateur pose des questions analytiques en français et obtient des visualisations adaptées.
+    \item \textbf{Garantir la souveraineté des données} en exécutant les modèles de langage localement via Ollama.
+    \item \textbf{Assurer la robustesse par auto-correction}, avec un mécanisme de détection et correction automatique des erreurs SQL (max 3 tentatives).
+    \item \textbf{Offrir une interface utilisateur moderne et intuitive}, avec glisser-déposer, suivi de progression en temps réel et visualisations interactives.
+    \item \textbf{Supporter les formats courants} (CSV et XLSX) avec nettoyage et normalisation automatiques.
+\end{enumerate}
+
+% \section{Périmètre du projet}
+
+% Le périmètre fonctionnel couvre : l'ingestion de fichiers CSV et XLSX (max 10~Mo) avec stockage SQLite, l'analyse automatique avec rapport de santé des données, la génération de dashboards (cartes métriques, graphiques en barres, secteurs et courbes), le mode conversationnel en langage naturel, et le filtrage temporel dynamique.
+
+% Sont explicitement hors périmètre pour cette version : l'authentification multi-utilisateurs, la connexion à des bases distantes (PostgreSQL, MySQL), le déploiement en production et la persistance avancée des tableaux de bord.

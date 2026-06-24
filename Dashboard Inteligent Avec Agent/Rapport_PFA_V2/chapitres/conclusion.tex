@@ -1,0 +1,67 @@
+%==============================================================================
+% CONCLUSION GÉNÉRALE
+%==============================================================================
+\chapter*{Conclusion Générale}
+\addcontentsline{toc}{chapter}{Conclusion Générale}
+
+Ce projet de fin d'année nous a permis de concevoir et de réaliser \textbf{SmartBI}, une plateforme de Business Intelligence pilotée par des agents d'intelligence artificielle utilisant LangGraph et des modèles de langage locaux. L'objectif central était de démontrer qu'il est possible de démocratiser l'accès à l'analyse de données en combinant les capacités de compréhension du langage naturel des LLM avec une architecture multi-agents structurée et résiliente.
+
+Au terme de ce travail, les principaux résultats obtenus sont les suivants. Un pipeline multi-agents fonctionnel a été implémenté, orchestrant la collaboration entre un analyste métier, un ingénieur de données et un designer, avec un mécanisme d'auto-correction des erreurs SQL permettant une fiabilité accrue. Une interface utilisateur moderne et réactive a été développée, offrant un chargement de données par glisser-déposer avec suivi de progression en temps réel, des tableaux de bord interactifs avec filtrage temporel, et une interface de dialogue en langage naturel. L'exécution locale des modèles de langage via Ollama garantit la souveraineté des données, répondant à une préoccupation croissante dans le contexte de la protection des données sensibles.
+
+Sur le plan personnel et professionnel, ce projet nous a permis de développer des compétences approfondies dans plusieurs domaines : l'architecture multi-agents et l'orchestration de workflows IA avec LangGraph, le développement d'applications web full-stack avec Django et React, l'ingénierie des prompts pour des tâches spécialisées (génération SQL, design de dashboards), et la gestion de projet itérative dans un contexte de recherche appliquée.
+
+Plusieurs perspectives d'amélioration et d'extension se dessinent pour les travaux futurs :
+
+\begin{itemize}[leftmargin=2cm]
+    \item \textbf{Authentification multi-utilisateurs} : ajout d'un système d'authentification avec gestion de profils pour supporter des environnements collaboratifs en entreprise.
+    \item \textbf{Sources de données distantes} : connexion à des bases de données PostgreSQL, MySQL et à des API REST pour étendre le champ d'application au-delà des fichiers locaux.
+    \item \textbf{Streaming conversationnel} : implémentation du streaming pour les réponses du mode chat afin de réduire la latence perçue et améliorer l'expérience utilisateur.
+    \item \textbf{Mémoire conversationnelle} : intégration d'un mécanisme de mémoire permettant au système de maintenir un contexte d'analyse sur plusieurs tours de dialogue, facilitant les analyses itératives et approfondies.
+    \item \textbf{Évaluation systématique} : mise en place de métriques de pertinence des dashboards générés et réalisation de tests utilisateurs pour valider scientifiquement l'approche.
+\end{itemize}
+
+En conclusion, ce projet démontre le potentiel des architectures multi-agents basées sur des LLM locaux pour transformer le paysage de la Business Intelligence. En réduisant la barrière technique entre les données et les décideurs, SmartBI ouvre la voie à une nouvelle génération d'outils décisionnels véritablement intelligents et accessibles.
+
+%==============================================================================
+% BIBLIOGRAPHIE
+%==============================================================================
+\begin{thebibliography}{99}
+\addcontentsline{toc}{chapter}{Bibliographie}
+
+\bibitem{langgraph}
+LangChain, \textit{LangGraph: Build stateful, multi-actor applications with LLMs}, \url{https://langchain-ai.github.io/langgraph/}, 2024.
+
+\bibitem{langchain}
+H. Chase, \textit{LangChain: Building applications with LLMs through composability}, \url{https://python.langchain.com/}, 2023.
+
+\bibitem{ollama}
+Ollama, \textit{Get up and running with large language models locally}, \url{https://ollama.com/}, 2024.
+
+\bibitem{react}
+Meta Platforms, \textit{React -- The library for web and native user interfaces}, \url{https://react.dev/}, 2024.
+
+\bibitem{django}
+Django Software Foundation, \textit{Django -- The web framework for perfectionists with deadlines}, \url{https://www.djangoproject.com/}, 2024.
+
+\bibitem{recharts}
+Recharts, \textit{A composable charting library built on React components}, \url{https://recharts.org/}, 2024.
+
+\bibitem{qwen}
+Alibaba Cloud, \textit{Qwen: Large language model series from Alibaba}, \url{https://github.com/QwenLM/Qwen}, 2024.
+
+\bibitem{generativebi}
+Gartner, \textit{Augmented Analytics and Generative BI: The Future of Data Analytics}, Gartner Research, 2024.
+
+\bibitem{pandas}
+W. McKinney, \textit{Data Structures for Statistical Computing in Python}, Proceedings of the 9th Python in Science Conference, 2010.
+
+\bibitem{sqlite}
+D. R. Hipp, \textit{SQLite: The Database Engine That Powers the World}, \url{https://www.sqlite.org/}, 2024.
+
+\bibitem{multigent}
+S. Yao et al., \textit{ReAct: Synergizing Reasoning and Acting in Language Models}, ICLR 2023.
+
+\bibitem{text2sql}
+J. Li et al., \textit{DIN-SQL: Decomposed In-Context Learning of Text-to-SQL with Self-Correction}, NeurIPS 2023.
+
+\end{thebibliography}

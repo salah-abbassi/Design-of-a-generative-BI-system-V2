@@ -20,6 +20,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 BI_SQLITE_PATH = Path(
     os.environ.get("BI_SQLITE_PATH", str(BASE_DIR.parent / "entreprise_test.db"))
 )
+BI_UPLOAD_SESSIONS_DIR = Path(
+    os.environ.get("BI_UPLOAD_SESSIONS_DIR", str(BASE_DIR / "upload_sessions"))
+)
 
 
 # Quick-start development settings - unsuitable for production

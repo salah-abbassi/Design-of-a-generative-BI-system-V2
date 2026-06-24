@@ -1,0 +1,346 @@
+%==============================================================================
+% CHAPITRE 2 : ANALYSE ET CONCEPTION
+%==============================================================================
+\chapter{Analyse et Conception}
+
+\section{Analyse fonctionnelle}
+
+\subsection{Acteurs du système}
+
+Le système SmartBI identifie un acteur principal : \textbf{l'utilisateur métier}, un décideur, analyste ou professionnel souhaitant explorer des données sans compétences techniques en SQL ou en visualisation. Il interagit avec le système via une interface web, en chargeant des fichiers de données ou en posant des questions en langage naturel.
+
+\subsection{Cas d'utilisation}
+
+Nous avons identifié cinq cas d'utilisation principaux, résumés dans le tableau~\ref{tab:cas-utilisation} et illustrés par le diagramme de la figure~\ref{fig:usecase}.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.5} % Aère le tableau pour une meilleure lisibilité
+\caption{Cas d'utilisation du système SmartBI}
+\label{tab:cas-utilisation}
+\begin{tabularx}{\textwidth}{
+    >{\bfseries\centering\arraybackslash}p{1.2cm} 
+    >{\raggedright\arraybackslash}p{4.5cm} 
+    >{\raggedright\arraybackslash}X
+}
+\toprule
+\textbf{N°} & \textbf{Cas d'utilisation} & \textbf{Description} \\
+\midrule
+UC1 & Charger un fichier & L'utilisateur charge un fichier CSV/XLSX via glisser-déposer. Le système ingère, normalise et affiche un rapport de santé. \\
+UC2 & Consulter le tableau de bord global & Résumé exécutif de la santé des données~: lignes, colonnes, complétude, colonnes à risque, statistiques. \\
+UC3 & Explorer les insights & Tableau de bord généré par les agents IA avec KPIs et graphiques interactifs. \\
+UC4 & Dialoguer avec l'assistant IA & Question en langage naturel, réponse sous forme de visualisations intégrées dans la conversation. \\
+% UC5 & Filtrer par période & Sélection d'une période temporelle pour affiner les indicateurs affichés. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    actor/.style={draw, circle, minimum size=1cm, fill=bleuUM5!10, thick},
+    usecase/.style={draw, ellipse, minimum width=3.5cm, minimum height=1.2cm, fill=bg, thick, align=center, font=\small},
+    system/.style={draw, dashed, rounded corners=10pt, inner sep=15pt, fill=bleuUM5!3}
+]
+\node[actor] (user) at (0,0) {\textbf{Utilisateur}};
+
+\node[usecase] (uc1) at (6,3) {Charger un fichier\\(CSV/XLSX)};
+\node[usecase] (uc2) at (6,1.5) {Consulter le tableau\\de bord global};
+\node[usecase] (uc3) at (6,0) {Explorer les\\insights générés};
+\node[usecase] (uc4) at (6,-1.5) {Dialoguer avec\\l'assistant IA};
+% \node[usecase] (uc5) at (6,-3) {Filtrer par période};
+
+% Cadre système (dessiné après mais en arrière-plan)
+\begin{pgfonlayer}{background}
+\node[
+    draw,
+    dashed,
+    rounded corners,
+    fit=(uc1)(uc2)(uc3)(uc4),
+    inner sep=0.8cm
+] {};
+\end{pgfonlayer}
+
+\draw[-{Stealth}] (user) -- (uc1);
+\draw[-{Stealth}] (user) -- (uc2);
+\draw[-{Stealth}] (user) -- (uc3);
+\draw[-{Stealth}] (user) -- (uc4);
+% \draw[-{Stealth}] (user) -- (uc5);
+\end{tikzpicture}
+\caption{Diagramme de cas d'utilisation du système SmartBI}
+\label{fig:usecase}
+\end{figure}
+
+\section{Exigences non fonctionnelles}
+
+\subsection{Performance}
+
+Le temps d'ingestion d'un fichier de 10~000 lignes ne doit pas excéder 5 secondes. Le temps de génération d'un tableau de bord par le pipeline d'agents doit rester inférieur à 60 secondes pour un jeu de données de taille modérée. L'interface utilisateur doit offrir un temps de chargement initial inférieur à 3 secondes sur une connexion locale.
+
+\subsection{Sécurité et confidentialité}
+
+Les données utilisateur sont traitées exclusivement en local, sans transfert vers des services cloud. Les fichiers uploadés sont limités à 10~Mo. Les noms de colonnes sont normalisés pour prévenir les injections SQL. Les modèles de langage sont exécutés localement via Ollama, garantissant qu'aucune donnée sensible ne quitte l'infrastructure de l'utilisateur.
+
+\subsection{Maintenabilité}
+
+L'architecture sépare clairement le frontend et le backend via une API REST, facilitant l'évolution indépendante de chaque couche. Les prompts des agents IA sont externalisés dans des templates modifiables sans altérer la logique du pipeline.
+
+\section{Architecture globale du système}
+
+\subsection{Vue d'ensemble}
+
+Le système SmartBI adopte une architecture client-serveur à deux tiers, illustrée par la figure~\ref{fig:archi-globale}. Le frontend React communique avec le backend Django via une API REST. Le backend orchestre le pipeline d'agents LangGraph et interagit avec la base de données SQLite ainsi qu'avec le serveur Ollama pour l'inférence des modèles de langage.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    box/.style={draw, rounded corners=8pt, minimum width=3cm, minimum height=1.5cm, align=center, font=\small, thick},
+    layer/.style={draw, dashed, rounded corners=12pt, inner sep=12pt}
+]
+% Frontend
+\node[layer, fill=bleuUM5!5, minimum width=6cm, minimum height=4cm] (fl) at (0,4) {};
+\node[box, fill=bleuUM5!15] (react) at (0,4.8) {React 19\\(SPA)};
+\node[box, fill=bleuUM5!15, minimum width=2.2cm] (recharts) at (-1.5,3.2) {Recharts};
+\node[box, fill=bleuUM5!15, minimum width=2.2cm] (router) at (1.5,3.2) {React Router};
+
+% Communication
+\node[draw, fill=orangecode!15, rounded corners, minimum width=4cm, minimum height=0.8cm, font=\small\bfseries] (api) at (0,1.2) {API REST (HTTP/JSON )};
+% + NDJSON
+% Backend
+\node[layer, fill=rougeENSIAS!5, minimum width=10cm, minimum height=4.5cm] (bl) at (0,-2.5) {};
+\node[box, fill=rougeENSIAS!15] (django) at (-3.5,-1.2) {Django + DRF};
+\node[box, fill=rougeENSIAS!15, minimum width=3.5cm] (langgraph) at (0,-1.2) {LangGraph\\(Multi-Agents)};
+\node[box, fill=rougeENSIAS!15] (ingestion) at (3.5,-1.2) {Ingestion\\(Pandas)};
+\node[box, fill=rougeENSIAS!15] (ollama) at (-2,-3.2) {Ollama\\(LLM local)};
+\node[box, fill=rougeENSIAS!15] (sqlite) at (2,-3.2) {SQLite\\(données BI)};
+
+\draw[-{Stealth}, thick] (react) -- (api);
+\draw[-{Stealth}, thick] (api) -- (django);
+\draw[-{Stealth}, thick] (django) -- (langgraph);
+\draw[-{Stealth}, thick] (django) -- (ingestion);
+\draw[-{Stealth}, thick] (langgraph) -- (ollama);
+\draw[-{Stealth}, thick] (ingestion) -- (sqlite);
+\draw[-{Stealth}, thick] (langgraph) -- (sqlite);
+
+\node[font=\small\bfseries\color{bleuUM5}] at (0,6.3) {Frontend (navigateur)};
+\node[font=\small\bfseries\color{rougeENSIAS}] at (0,-5.2) {Backend (serveur local)};
+\end{tikzpicture}
+\caption{Architecture globale du système SmartBI}
+\label{fig:archi-globale}
+\end{figure}
+
+\subsection{Justification des choix architecturaux}
+
+Le choix d'une architecture à deux tiers s'explique par la nature du projet : un prototype fonctionnel destiné à démontrer la faisabilité de l'approche. La simplicité de déploiement (un serveur Django et un serveur de développement Vite) constitue un avantage significatif. La séparation frontend/backend via une API REST permet néanmoins une évolution future vers une architecture plus distribuée.
+%  Le protocole de streaming NDJSON pour l'upload offre une expérience réactive sans nécessiter de WebSocket.
+
+\section{Conception du pipeline multi-agents}
+
+\subsection{Vue d'ensemble du pipeline LangGraph}
+
+Le cœur du système repose sur un graphe d'état LangGraph composé de trois nœuds principaux et d'un mécanisme de branchement conditionnel. Ce pipeline est invoqué dans deux contextes : lors du chargement d'un fichier (mode automatique) et lors d'une interaction conversationnelle (mode conversationnel). La figure~\ref{fig:pipeline} illustre le flux d'exécution.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    scale=0.95,
+    transform shape,
+    node/.style={
+        draw,
+        rounded corners=6pt,
+        minimum width=3cm,
+        minimum height=0.9cm,
+        align=center,
+        font=\footnotesize\bfseries,
+        thick
+    },
+    edge/.style={-{Stealth}, thick},
+    decision/.style={
+        draw,
+        diamond,
+        aspect=2,
+        minimum width=2.8cm,
+        minimum height=1.4cm,
+        align=center,
+        font=\footnotesize,
+        thick
+    },
+    entry/.style={
+        draw,
+        rounded corners=12pt,
+        minimum width=3cm,
+        minimum height=0.9cm,
+        align=center,
+        font=\footnotesize\bfseries,
+        thick,
+        dashed
+    }
+]
+
+% === Entrées utilisateur ===
+\node[entry, fill=gray!10] (upload) at (-3.5, 0)
+{Fichier\\CSV / Excel};
+
+\node[entry, fill=gray!10] (question) at (3.5, 0)
+{Question\\utilisateur};
+
+% === Mode décision ===
+\node[decision, fill=orangecode!15] (mode) at (0, -2)
+{Mode ?};
+
+% === Branche Upload (gauche) ===
+\node[node, fill=bleuUM5!15] (ingestion) at (-4.5, -3)
+{Ingestion\\des données};
+
+\node[node, fill=vertcode!15] (cleaner) at (-4.5, -5)
+{Agent Column\\Cleaner};
+
+\node[node, fill=rougeENSIAS!12] (explainer) at (-4.5, -7)
+{Agent Explainer};
+
+\node[node, fill=bleuUM5!15] (autoanalyst) at (-4.5, -9)
+{Agent Analyste\\(mode auto)};
+
+% === Branche Chat (droite) ===
+\node[node, fill=bleuUM5!15] (convanalyst) at (4.5, -6)
+{Agent Analyste\\(mode conversationnel)};
+
+% === Tronc commun ===
+\node[node, fill=rougeENSIAS!15] (engineer) at (0, -10.5)
+{Agent Ingénieur\\(Data Engineer)};
+
+\node[decision, fill=orangecode!15] (check) at (0, -13)
+{Erreurs ?\\Tentatives < 3 ?};
+
+\node[node, fill=vertcode!15] (designer) at (0, -16)
+{Agent Designer};
+
+\node[node, fill=bg] (end) at (0, -18)
+{FIN};
+
+\node[node, fill=bg] (endfail) at (5.5, -13)
+{FIN\\(échec)};
+
+% === Flux : Entrées vers décision ===
+\draw[edge] (upload) -- (mode);
+\draw[edge] (question) -- (mode);
+
+% === Branche Upload ===
+\draw[edge] (mode.west) -| node[above left, font=\scriptsize, pos=0.2] {upload} (ingestion);
+\draw[edge] (ingestion) -- node[right, font=\scriptsize] {Nettoyage} (cleaner);
+\draw[edge] (cleaner) -- node[right, font=\scriptsize] {SQLite} (explainer);
+\draw[edge] (explainer) -- node[right, font=\scriptsize, align=left] {Explication\\métier} (autoanalyst);
+\draw[edge] (autoanalyst) -- node[left, font=\scriptsize] {4--10 KPIs} (engineer);
+
+% === Branche Chat ===
+\draw[edge] (mode.east) -| node[above right, font=\scriptsize, pos=0.2] {chat} (convanalyst);
+\draw[edge] (convanalyst) |- node[right, font=\scriptsize, pos=0.3] {KPIs} (engineer);
+
+% === Tronc commun ===
+\draw[edge] (engineer) -- node[right, font=\scriptsize] {SQL exécuté} (check);
+
+% OK vers Designer
+\draw[edge] (check.south) -- node[right, font=\scriptsize] {OK} (designer);
+
+% Retry
+\draw[edge] (check.west) -- ++(-2.5,0) node[below, font=\scriptsize, pos=0.5] {Erreur (retry)} |- (engineer.west);
+
+% Échec définitif
+\draw[edge] (check.east) -- node[above, font=\scriptsize] {3 échecs} (endfail);
+
+% Designer vers FIN
+\draw[edge] (designer) -- node[right, font=\scriptsize] {Dashboard JSON} (end);
+
+\end{tikzpicture}
+\caption{Pipeline complet du système SmartBI : ingestion, agents IA et mécanisme de retry}
+\label{fig:pipeline-complet}
+\end{figure}
+
+
+\subsection{État partagé du graphe}
+
+Le graphe LangGraph est paramétré par un état partagé qui évolue au fur et à mesure que les agents produisent leurs résultats. Le tableau~\ref{tab:graphstate} détaille les champs de cet état.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.5} % Aère le tableau pour éviter que le texte ne touche les lignes
+\caption{Structure de l'état partagé du graphe LangGraph}
+\label{tab:graphstate}
+\begin{tabularx}{\textwidth}{
+    >{\raggedright\arraybackslash\bfseries}l 
+    >{\centering\arraybackslash}p{2.8cm} 
+    >{\raggedright\arraybackslash}X
+}
+\toprule
+\textbf{Champ} & \textbf{Type} & \textbf{Description} \\
+\midrule
+mode                 & Literal      & Mode~: \texttt{conversational} ou \texttt{auto} \\
+question\_utilisateur & Texte        & Question en langage naturel \\
+schema\_db            & Texte        & DDL complet des tables de la base BI \\
+kpis\_proposes       & Texte        & Liste des KPIs proposés par l'analyste \\
+donnees\_brutes      & Dictionnaire & Résultats bruts des requêtes SQL \\
+dashboard\_json      & Texte        & JSON final du tableau de bord \\
+erreurs              & Texte        & Messages d'erreur des requêtes SQL échouées \\
+tentatives           & Entier       & Compteur de tentatives (max 3) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Agent Column Cleaner}
+Intervenant juste après l'ingestion initiale par Pandas et avant l'écriture dans la base SQLite, l'agent Column Cleaner agit comme un \textit{Data Engineer expert en qualité de données}. Il analyse un échantillon des données ainsi que leurs statistiques descriptives pour identifier et suggérer la suppression des colonnes inutiles (identifiants redondants, colonnes quasi-vides, constantes ou métadonnées techniques). Ses recommandations sont retournées à l'utilisateur sous forme de JSON structuré pour validation avant l'écriture définitive en base, assurant ainsi une base de données propre et optimisée pour l'analyse BI.
+
+\subsection{Agent Explainer}
+L'agent explainer intervient en amont du pipeline LangGraph principal, après la validation du nettoyage et le chargement dans SQLite. Il adopte le rôle d'un \textit{Data Scientist expert} et reçoit en entrée le schéma SQL de la base de données (les instructions \texttt{CREATE TABLE} extraites de SQLite). Son objectif est de rédiger une synthèse courte et professionnelle, en un ou deux paragraphes, expliquant le domaine ou le métier dont proviennent très probablement les données, ainsi que les informations clés exploitables et le potentiel d'analyse qu'elles offrent.
+Cet agent ne génère ni code ni JSON : il produit uniquement un texte en langage naturel, affiché ensuite dans la page \textit{Vue Exécutive} du frontend sous l'intitulé « Contexte et domaine des données ». Cette étape permet à l'utilisateur de valider que le système a correctement identifié la nature de ses données avant de consulter les KPIs et visualisations générés par les agents suivants.
+
+\subsection{Agent Analyste}
+
+L'agent analyste est le premier nœud du graphe. Il dispose de deux modes de fonctionnement :
+
+\textbf{Mode conversationnel} : l'agent reçoit la question de l'utilisateur et le schéma de la base de données. Il adopte le rôle d'un \textit{Business Analyst Senior} et propose une liste de KPIs réalisables avec les colonnes disponibles, sans générer de SQL.
+
+\textbf{Mode automatique} : activé lors du chargement d'un fichier, il propose 4 à 10 KPIs pour un tableau de bord exécutif, en priorisant les données fraîchement chargées, avec diversité de visualisations et analyses temporelles si des colonnes de type date sont détectées.
+
+\subsection{Agent Ingénieur de données}
+
+L'agent ingénieur traduit les KPIs proposés en requêtes SQLite exécutables. Il génère un dictionnaire associant chaque KPI à une requête SQL valide, en respectant le schéma fourni et la syntaxe SQLite. Les requêtes sont exécutées et les résultats retournés sous forme de dictionnaires.
+
+En cas d'erreurs SQL, celles-ci sont capturées et le mécanisme de retry renvoie l'exécution vers l'agent ingénieur avec les messages d'erreur en contexte, permettant l'auto-correction. Ce cycle est limité à trois tentatives.
+
+\subsection{Agent Designer}
+
+L'agent designer transforme les données brutes en un tableau de bord structuré au format JSON. Il dispose de quatre types de composants visuels : \textbf{MetricCard} (indicateur unique), \textbf{BarChart} (comparaisons catégorielles), \textbf{PieChart} (distributions) et \textbf{LineChart} (évolutions temporelles). Le JSON produit est directement consommable par le frontend.
+
+\subsection{Mécanisme de routage conditionnel}
+
+La logique de contrôle examine l'état après l'agent ingénieur et prend l'une des trois décisions : retour vers l'ingénieur pour retry (si erreurs et tentatives < 3), terminaison du graphe (si 3 échecs), ou passage au designer (si aucune erreur). Ce mécanisme confère au système une résilience notable.
+
+\section{Conception de l'ingestion de données}
+
+Le module d'ingestion prend en charge les fichiers CSV et XLSX et exécute cinq étapes : lecture du fichier par Pandas, normalisation des noms de colonnes, calcul d'un rapport de santé complet (statistiques descriptives), appel à l'Agent Column Cleaner pour suggérer les nettoyages pertinents, puis après validation utilisateur, écriture dans la table \texttt{dataset\_utilisateur} de la base SQLite en mode remplacement.
+
+\section{Conception de l'interface utilisateur}
+
+\subsection{Architecture de navigation}
+
+L'interface est une application monopage (SPA) React avec quatre vues principales : \textbf{Source de données} (\texttt{/upload}) pour le chargement de fichiers, \textbf{Tableau de bord global} (\texttt{/dashboard}) pour la santé des données, \textbf{Insights} (\texttt{/insights}) pour le dashboard généré par les agents avec filtrage temporel, et \textbf{Chat IA} (\texttt{/chat}) pour le dialogue en langage naturel.
+
+\subsection{Gestion de l'état applicatif}
+
+L'état global est géré par un pattern Context + useReducer avec persistance dans le navigateur. Il comprend le rapport de santé des données, le tableau de bord automatique et le tableau de bord conversationnel.
+
+\subsection{Composants de visualisation}
+
+Le moteur de rendu partagé dispose les widgets dans une grille CSS à 12 colonnes responsive. Quatre types de visualisations sont supportés via Recharts : MetricCard, BarChart, PieChart et LineChart, avec formatage français des nombres et calcul de tendances.
+
+\subsection{Interface de chat double mode}
+
+L'assistant IA est accessible via un panneau latéral (420 px, bouton flottant) pour une interaction sans quitter la page courante, et une page dédiée plein écran pour une conversation immersive. Les deux modes partagent le même état.
+
+\section{Conception de la base de données}
+
+Le système utilise deux bases SQLite distinctes : une pour les métadonnées Django (non utilisée activement) et une pour les données métier, dont le chemin est configurable. Le schéma est découvert dynamiquement à l'exécution, permettant au pipeline d'agents de s'adapter à n'importe quelle structure de données. La table \texttt{dataset\_utilisateur} est remplacée à chaque nouvel upload.
+
+\section{Synthèse}
+
+La conception repose sur trois piliers : un pipeline multi-agents LangGraph avec séparation des responsabilités, une interface réactive et intuitive, et une architecture de stockage flexible avec découverte dynamique de schéma. Le chapitre suivant détaille la mise en œuvre technique.

@@ -102,34 +102,107 @@ export default function GlobalDashboardPage() {
 
           {dataHealth.dataset_explanation && (
             <div className="bi-card bi-health-panel" style={{ marginBottom: '1.5rem' }}>
-              <h2>Contexte et domaine des données (Agent IA)</h2>
+              <h2>Contexte et domaine des données (Agent Explainer)</h2>
               <p style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>{dataHealth.dataset_explanation}</p>
+            </div>
+          )}
+
+          {(dataHealth.columns_dropped?.length > 0 || dataHealth.column_cleanup_suggestions?.summary) && (
+            <div className="bi-card bi-health-panel" style={{ marginBottom: '1.5rem' }}>
+              <h2>Nettoyage des colonnes (Agent Cleaner)</h2>
+              {dataHealth.column_cleanup_suggestions?.summary && (
+                <p style={{ color: '#94a3b8', marginBottom: '1rem', lineHeight: 1.6 }}>
+                  {dataHealth.column_cleanup_suggestions.summary}
+                </p>
+              )}
+              {dataHealth.columns_dropped?.length > 0 ? (
+                <p style={{ margin: 0, color: '#e2e8f0' }}>
+                  Colonnes supprimées après validation :{' '}
+                  <strong style={{ color: '#f87171' }}>
+                    {dataHealth.columns_dropped.join(', ')}
+                  </strong>
+                </p>
+              ) : (
+                <p style={{ margin: 0, color: '#86efac' }}>
+                  Aucune colonne supprimée — toutes les colonnes ont été conservées.
+                </p>
+              )}
             </div>
           )}
 
           <div className="bi-health-panels">
             <div className="bi-card bi-health-panel">
-              <h2>Qualité des données</h2>
+              <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '10px', background: 'linear-gradient(135deg, rgba(99,102,241,0.25), rgba(34,197,94,0.18))', fontSize: '1rem' }}>📊</span>
+                Qualité des données
+              </h2>
               {summary.topNullable ? (
-                <p className="bi-muted">
-                  Colonne la plus incomplète : <strong>{summary.topNullable.name}</strong> (
-                  {toPct(summary.topNullable.null_pct)} de valeurs nulles)
-                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.85rem 1rem', borderRadius: '12px', background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.15)', marginBottom: '1rem' }}>
+                  <span style={{ fontSize: '1.3rem' }}>⚠️</span>
+                  <p style={{ margin: 0, color: '#e2e8f0', fontSize: '0.92rem', lineHeight: 1.5 }}>
+                    Colonne la plus incomplète : <strong style={{ color: '#f87171' }}>{summary.topNullable.name}</strong>
+                    <span style={{ color: '#94a3b8' }}> — {toPct(summary.topNullable.null_pct)} de valeurs nulles</span>
+                  </p>
+                </div>
               ) : (
                 <p className="bi-muted">Aucune colonne détectée.</p>
               )}
-              {dataHealth.datetime_ranges?.length > 0 && (
-                <>
-                  <h3>Périodes détectées</h3>
-                  <ul className="bi-health-list">
-                    {dataHealth.datetime_ranges.map((d) => (
-                      <li key={d.column}>
-                        {d.column} : {d.min} → {d.max}
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
+              {(() => {
+                const EXCLUDED = ['phone', 'postalcode'];
+                const filteredRanges = (dataHealth.datetime_ranges || []).filter(
+                  (d) => !EXCLUDED.includes(d.column.toLowerCase()),
+                );
+                if (filteredRanges.length === 0) return null;
+
+                const formatDate = (iso) => {
+                  try {
+                    const d = new Date(iso);
+                    if (isNaN(d.getTime()) || d.getFullYear() < 1971) return iso;
+                    return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+                  } catch { return iso; }
+                };
+
+                return (
+                  <>
+                    <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                      <span style={{ fontSize: '1rem' }}>📅</span> Périodes détectées
+                    </h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                      {filteredRanges.map((d) => (
+                        <div key={d.column} style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.9rem',
+                          padding: '0.8rem 1rem',
+                          borderRadius: '12px',
+                          background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(34,197,94,0.06))',
+                          border: '1px solid rgba(148,163,184,0.12)',
+                          transition: 'all 0.25s ease',
+                        }}>
+                          <span style={{
+                            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                            width: '36px', height: '36px', borderRadius: '10px', flexShrink: 0,
+                            background: 'linear-gradient(135deg, #6366f1, #22c55e)',
+                            color: '#fff', fontSize: '0.75rem', fontWeight: 700,
+                          }}>
+                            📆
+                          </span>
+                          <div style={{ flex: 1 }}>
+                            <p style={{ margin: 0, color: '#e2e8f0', fontWeight: 600, fontSize: '0.9rem', textTransform: 'capitalize' }}>
+                              {d.column.replace(/_/g, ' ')}
+                            </p>
+                            <p style={{ margin: '0.2rem 0 0', color: '#94a3b8', fontSize: '0.82rem' }}>
+                              <span style={{ color: '#22c55e', fontWeight: 500 }}>{formatDate(d.min)}</span>
+                              <span style={{ margin: '0 0.5rem', opacity: 0.5 }}>→</span>
+                              <span style={{ color: '#6366f1', fontWeight: 500 }}>{formatDate(d.max)}</span>
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                );
+              })()}
             </div>
 
             <div className="bi-card bi-health-panel">

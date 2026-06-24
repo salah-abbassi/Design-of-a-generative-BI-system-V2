@@ -49,12 +49,16 @@ def compute_data_health(df: pd.DataFrame) -> dict:
         null_count = int(df[col].isna().sum())
         null_pct = round(100.0 * null_count / n_rows, 2) if n_rows else 0.0
         is_numeric = pd.api.types.is_numeric_dtype(df[col])
+        n_unique = int(df[col].nunique(dropna=True))
         col_info = {
             "name": str(col),
             "dtype": str(df[col].dtype),
             "null_count": null_count,
             "null_pct": null_pct,
             "is_numeric": bool(is_numeric),
+            "unique_count": n_unique,
+            "unique_ratio": round(n_unique / n_rows, 4) if n_rows else 0.0,
+            "is_constant": n_unique <= 1,
         }
         if is_numeric:
             col_info["mean"] = float(df[col].mean()) if not pd.isna(df[col].mean()) else None
@@ -101,11 +105,8 @@ def compute_data_health(df: pd.DataFrame) -> dict:
     }
 
 
-def ingest_upload_to_sqlite(uploaded_file, db_path: str) -> tuple[pd.DataFrame, dict]:
-    """
-    Lit le fichier, normalise les colonnes, remplace DATASET_TABLE dans SQLite.
-    Retourne (dataframe utilisé, data_health dict).
-    """
+def read_and_prepare_dataframe(uploaded_file) -> pd.DataFrame:
+    """Lit le fichier uploadé et normalise les noms de colonnes."""
     name = getattr(uploaded_file, "name", "") or ""
     ext = Path(name).suffix.lower()
     if ext not in ALLOWED_EXTENSIONS:
@@ -118,13 +119,41 @@ def ingest_upload_to_sqlite(uploaded_file, db_path: str) -> tuple[pd.DataFrame, 
     old_cols = list(df.columns)
     new_cols = _dedupe_slugs([_column_slug(c) for c in old_cols])
     df.columns = new_cols
+    return df
 
-    health = compute_data_health(df)
 
+def apply_column_drops(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
+    """Supprime les colonnes sélectionnées (ignore les noms invalides)."""
+    if not columns:
+        return df
+    safe = [c for c in columns if c in df.columns]
+    if not safe:
+        return df
+    remaining = len(df.columns) - len(safe)
+    if remaining < 1:
+        raise ValueError("Impossible de supprimer toutes les colonnes. Gardez au moins une colonne.")
+    return df.drop(columns=safe)
+
+
+def write_dataframe_to_sqlite(df: pd.DataFrame, db_path: str) -> None:
+    """Écrit le dataframe dans SQLite (remplace dataset_utilisateur)."""
     conn = sqlite3.connect(db_path)
     try:
         df.to_sql(DATASET_TABLE, conn, if_exists="replace", index=False)
     finally:
         conn.close()
 
+
+def dataframe_sample_text(df: pd.DataFrame, n: int = 5) -> str:
+    return df.head(n).to_string()
+
+
+def ingest_upload_to_sqlite(uploaded_file, db_path: str) -> tuple[pd.DataFrame, dict]:
+    """
+    Lit le fichier, normalise les colonnes, remplace DATASET_TABLE dans SQLite.
+    Retourne (dataframe utilisé, data_health dict).
+    """
+    df = read_and_prepare_dataframe(uploaded_file)
+    health = compute_data_health(df)
+    write_dataframe_to_sqlite(df, db_path)
     return df, health

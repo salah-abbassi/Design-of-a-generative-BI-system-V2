@@ -1,0 +1,184 @@
+\documentclass{rapportENSIAS}
+\definecolor{bg}{rgb}{0.95,0.95,0.95}
+
+\usepackage{titlesec}
+\usepackage{tocloft}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{longtable}
+\usepackage{setspace}
+
+% TikZ et bibliothèques
+\usepackage{tikz}
+\usetikzlibrary{positioning,shadows,fit,shapes.geometric,arrows.meta,calc,backgrounds}
+\definecolor{bmcblue}{HTML}{DCEEFF}
+\definecolor{bmcaccent}{HTML}{1F4FD8}
+
+% Couleurs du projet
+\definecolor{rougeENSIAS}{RGB}{180,30,30}
+\definecolor{bleuUM5}{RGB}{0,80,160}
+\definecolor{grisfonce}{RGB}{50,50,50}
+\definecolor{orangecode}{RGB}{230,126,34}
+\definecolor{vertcode}{RGB}{0,128,0}
+
+% Commande pour les emplacements de captures d'écran
+% Usage: \screenshot[largeur]{Description de la capture}
+\newcommand{\screenshot}[2][\textwidth]{%
+  \begin{figure}[H]
+    \centering
+    \fbox{\parbox{#1}{\vspace{4cm}\centerline{\textit{\large #2}}\vspace{4cm}}}
+  \end{figure}
+}
+
+\title{Rapport PFA -- SmartBI}
+
+\begin{document}
+
+%----------- Informations du rapport ---------
+
+\titre{Plateforme de Business Intelligence pilotée par des agents d'Intelligence Artificielle utilisant LangGraph et des modèles de langage locaux}
+\sujet{Projet de Fin d'Année -- Business Intelligence \& Analytics}
+
+\enseignant{ \textsc{ Pr Y. ALAMI   }}
+
+\eleves{Salah Eddine \textsc{ABBASSI} \\ Selimane \textsc{Ait Si Elmadani} }
+
+\jury{\textsc{ Pr. .....} \\ \textsc{ Pr. ....}}
+
+%----------- Initialisation -------------------
+
+\fairemarges
+\fairepagedegarde
+\chapter*{Dédicaces}
+\addcontentsline{toc}{chapter}{Dédicaces}
+
+Nous dédions ce modeste travail à nos parents, dont le soutien inconditionnel et les sacrifices ont rendu possible notre parcours académique. À nos familles et à tous ceux qui nous ont soutenus, encouragés et inspirés tout au long de notre formation à l'ENSIAS.
+
+\chapter*{Remerciements}
+\addcontentsline{toc}{chapter}{Remerciements}
+
+Nous tenons tout d'abord à exprimer nos sincères remerciements à notre encadrant, le Professeur Y.~ALAMI, pour sa disponibilité, ses conseils avisés et son accompagnement tout au long de la réalisation de ce projet. Son expertise dans le domaine de l'informatique décisionnelle et de l'intelligence artificielle a été déterminante dans l'orientation de nos travaux.
+
+Nous remercions également l'ensemble du corps professoral de l'École Nationale Supérieure d'Informatique et d'Analyse des Systèmes (ENSIAS) pour la qualité de la formation dispensée durant notre cursus d'ingénieur, qui nous a fourni les bases théoriques et pratiques nécessaires à la conduite de ce projet.
+
+Nous adressons nos remerciements à nos collègues et camarades de promotion pour leurs retours constructifs et l'entraide mutuelle tout au long de l'année universitaire.
+
+Enfin, nous remercions les membres du jury pour l'intérêt qu'ils portent à ce travail en acceptant de l'évaluer.
+
+%==============================================================================
+% RÉSUMÉS
+%==============================================================================
+\chapter*{Résumé}
+\addcontentsline{toc}{chapter}{Résumé}
+
+Dans un contexte où les données constituent un actif stratégique majeur pour les entreprises, leur exploitation efficace demeure un défi significatif. Les outils traditionnels de Business Intelligence (BI), bien que puissants, présentent des barrières techniques importantes qui limitent leur accessibilité aux utilisateurs non spécialistes. Parallèlement, l'émergence des modèles de langage de grande taille (LLMs) et des systèmes multi-agents ouvre de nouvelles perspectives pour automatiser et démocratiser l'analyse de données.
+
+Ce mémoire présente le projet \textbf{SmartBI}, une plateforme innovante de Business Intelligence intelligente propulsée par des agents d'Intelligence Artificielle. L'objectif principal est de permettre à des utilisateurs métier, sans compétences techniques en SQL ou en analyse de données, d'obtenir des tableaux de bord dynamiques et pertinents à partir de simples questions formulées en langage naturel ou par import de fichiers de données (CSV, Excel).
+
+L'architecture de SmartBI repose sur un système multi-agents orchestré par le framework \textbf{LangGraph}, composé de trois agents spécialisés : un agent \textit{Business Analyst} qui traduit les besoins métier en indicateurs clés de performance (KPIs), un agent \textit{Data Engineer} qui génère et exécute les requêtes SQL correspondantes, et un agent \textit{Data Designer} qui conçoit la structure visuelle du dashboard. Le modèle de langage utilisé, \textit{Qwen3-Coder}, est exécuté localement via \textbf{Ollama}, garantissant ainsi la confidentialité complète des données sensibles.
+
+Le frontend de la plateforme est développé en \textbf{React 19} avec la bibliothèque \textbf{Recharts} pour les visualisations interactives, tandis que le backend repose sur \textbf{Django REST Framework} pour l'exposition des services via une API REST sécurisée. L'ensemble du pipeline, de l'ingestion des données à la génération du dashboard, est automatisé et inclut un mécanisme de retry intelligent permettant de corriger automatiquement les erreurs SQL générées.
+
+Les résultats obtenus démontrent l'efficacité de l'approche multi-agents : un taux de succès de 95\% pour la génération SQL grâce au mécanisme de retry, une pertinence métier des KPIs proposés évaluée à 85\%, et une expérience utilisateur jugée satisfaisante avec un score de 4.2/5. Ce projet ouvre la voie à une nouvelle génération d'outils d'analyse de données, plus accessibles, plus intelligents et respectueux de la confidentialité des informations.
+
+\textbf{Mots-clés :} Business Intelligence, Agents IA, LangGraph, Ollama, React, Django, Multi-agents, NLP, Dashboard, Text-to-SQL, Confidentialité.
+
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+
+In a context where data represents a major strategic asset for organizations, its effective exploitation remains a significant challenge. Traditional Business Intelligence (BI) tools, although powerful, present important technical barriers that limit their accessibility to non-specialist users. Meanwhile, the emergence of Large Language Models (LLMs) and multi-agent systems opens new perspectives for automating and democratizing data analysis.
+
+This thesis presents the \textbf{SmartBI} project, an innovative intelligent Business Intelligence platform powered by Artificial Intelligence agents. The main objective is to enable business users, without technical skills in SQL or data analysis, to obtain dynamic and relevant dashboards from simple natural language queries or by uploading data files (CSV, Excel).
+
+The SmartBI architecture is based on a multi-agent system orchestrated by the \textbf{LangGraph} framework, composed of three specialized agents: a \textit{Business Analyst} agent that translates business needs into Key Performance Indicators (KPIs), a \textit{Data Engineer} agent that generates and executes the corresponding SQL queries, and a \textit{Data Designer} agent that designs the visual structure of the dashboard. The language model used, \textit{Qwen3-Coder}, runs locally via \textbf{Ollama}, thus guaranteeing complete confidentiality of sensitive data.
+
+The platform's frontend is developed in \textbf{React 19} with the \textbf{Recharts} library for interactive visualizations, while the backend relies on \textbf{Django REST Framework} for exposing services through a secure REST API. The entire pipeline, from data ingestion to dashboard generation, is automated and includes an intelligent retry mechanism for automatically correcting generated SQL errors.
+
+The obtained results demonstrate the effectiveness of the multi-agent approach: a 95\% success rate for SQL generation thanks to the retry mechanism, a business relevance of proposed KPIs evaluated at 85\%, and a satisfactory user experience with a score of 4.2/5. This project paves the way for a new generation of data analysis tools, more accessible, more intelligent, and respectful of data privacy.
+
+\textbf{Keywords:} Business Intelligence, AI Agents, LangGraph, Ollama, React, Django, Multi-agent, NLP, Dashboard, Text-to-SQL, Privacy.
+\newpage
+%==============================================================================
+% TABLE DES MATIÈRES, LISTES
+%==============================================================================
+\tableofcontents
+\newpage
+\listoffigures
+\addcontentsline{toc}{chapter}{Liste des figures}
+
+\listoftables
+\addcontentsline{toc}{chapter}{Liste des tableaux}
+
+%==============================================================================
+% GLOSSAIRE / ACRONYMES
+%==============================================================================
+% \chapter*{Glossaire et Acronymes}
+% \addcontentsline{toc}{chapter}{Glossaire et Acronymes}
+
+% \section*{Acronymes}
+
+% \begin{acronym}[LLM]
+%     \acro{API}[API]{Application Programming Interface}
+%     \acro{BI}[BI]{Business Intelligence}
+%     \acro{CSV}[CSV]{Comma-Separated Values}
+%     \acro{EDA}[EDA]{Exploratory Data Analysis}
+%     \acro{ETL}[ETL]{Extract, Transform, Load}
+%     \acro{JSON}[JSON]{JavaScript Object Notation}
+%     \acro{KPI}[KPI]{Key Performance Indicator}
+%     \acro{LLM}[LLM]{Large Language Model}
+%     \acro{NLP}[NLP]{Natural Language Processing}
+%     \acro{ORM}[ORM]{Object-Relational Mapping}
+%     \acro{REST}[REST]{Representational State Transfer}
+%     \acro{SQL}[SQL]{Structured Query Language}
+%     \acro{UI}[UI]{User Interface}
+%     \acro{UX}[UX]{User Experience}
+% \end{acronym}
+
+\newpage
+
+\chapter*{Glossaire}
+\addcontentsline{toc}{chapter}{Glossaire}
+
+\begin{table}[H]
+\centering
+\caption{Glossaire des termes techniques}
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Terme} & \textbf{Définition} \\
+\midrule
+Agent IA & Programme autonome utilisant un LLM pour accomplir des tâches spécifiques \\
+Business Intelligence & Ensemble d'outils et méthodes pour transformer les données en informations décisionnelles \\
+Dashboard & Tableau de bord visuel présentant des indicateurs clés de performance \\
+ETL & Processus d'extraction, transformation et chargement des données \\
+Feature Engineering & Création de nouvelles variables à partir des données existantes \\
+KPI & Indicateur clé de performance mesurant l'atteinte d'objectifs \\
+LangGraph & Framework d'orchestration d'agents IA sous forme de graphes d'états \\
+LLM & Modèle de langage de grande taille entraîné sur des corpus textuels massifs \\
+NLP & Traitement automatique du langage naturel \\
+Ollama & Outil permettant d'exécuter des LLMs localement sur une machine personnelle \\
+Prompt & Instruction textuelle fournie à un modèle de langage pour guider sa réponse \\
+Prompt Engineering & Art de concevoir des prompts efficaces pour les modèles de langage \\
+Qwen3-Coder & Modèle de langage spécialisé dans la génération de code, développé par Alibaba \\
+Recharts & Bibliothèque de visualisation React pour créer des graphiques interactifs \\
+Retry & Mécanisme de nouvelle tentative automatique en cas d'erreur \\
+SQLite & Système de gestion de base de données relationnelle embarqué et léger \\
+System Prompt & Prompt système définissant le rôle et les contraintes d'un agent IA \\
+Text-to-SQL & Tâche de conversion d'une question en langage naturel en requête SQL \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\newpage
+
+\include{chapitres/introduction}
+\include{chapitres/contexte}
+\include{chapitres/conception}
+\include{chapitres/realisation}
+\include{chapitres/conclusion}
+% \include{chapitres/bibliographie}
+% \include{chapitres/annexes}
+
+
+\end{document}

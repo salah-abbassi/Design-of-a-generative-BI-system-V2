@@ -1,31 +1,50 @@
 import { DashboardGrid } from '../components/DashboardGrid';
-import { useBiPlatform } from '../context/BiPlatformContext';
-
 export default function ChatPage({ messages, question, setQuestion, isSending, askAi }) {
-  const { chatDashboard } = useBiPlatform();
 
   return (
     <section className="bi-page" style={{ paddingBottom: '140px' }}>
       <div className="bi-chat-full-container" style={{ background: 'rgba(15, 23, 42, 0.2)', borderRadius: '16px', border: '1px solid rgba(148, 163, 184, 0.1)', padding: '1.5rem', minHeight: '50vh' }}>
         <div className="bi-chat-full-messages" style={{ display: 'flex', flexDirection: 'column' }}>
           {messages.map((message, index) => (
-            <div
-              key={`${message.role}-${index}`}
-              className={message.role === 'user' ? 'bi-message bi-message-user' : 'bi-message bi-message-ai'}
-              style={{ 
-                maxWidth: '85%', 
-                margin: message.role === 'user' ? '0 0 1.5rem auto' : '0 auto 1.5rem 0', 
-                fontSize: '1.05rem', 
-                padding: '1.2rem 1.5rem',
-                lineHeight: '1.6'
-              }}
-            >
-              {message.text}
+            <div key={`${message.role}-${index}`} style={{ display: 'flex', flexDirection: 'column', width: '100%', marginBottom: '2rem' }}>
+              <div
+                className={message.role === 'user' ? 'bi-message bi-message-user' : 'bi-message bi-message-ai'}
+                style={{ 
+                  maxWidth: '85%', 
+                  margin: message.role === 'user' ? '0 0 0 auto' : '0 auto 0 0', 
+                  fontSize: '1.05rem', 
+                  padding: '1.2rem 1.5rem',
+                  lineHeight: '1.6'
+                }}
+              >
+                {message.text}
+              </div>
+              {message.dashboard && message.dashboard.length > 0 && (
+                <div className="bi-chat-dashboard-preview" style={{ marginTop: '1.5rem', padding: '1rem', background: 'rgba(15, 23, 42, 0.4)', borderRadius: '16px', border: '1px solid rgba(148, 163, 184, 0.15)', backdropFilter: 'blur(12px)' }}>
+                  <DashboardGrid items={message.dashboard} />
+                </div>
+              )}
             </div>
           ))}
-          {chatDashboard?.length > 0 && (
-            <div className="bi-chat-dashboard-preview" style={{ marginTop: '2rem', padding: '1rem', background: '#0f172a', borderRadius: '12px' }}>
-              <DashboardGrid items={chatDashboard} />
+          
+          {isSending && (
+            <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginBottom: '2rem' }}>
+              <div
+                className="bi-message bi-message-ai"
+                style={{ 
+                  maxWidth: '85%', 
+                  margin: '0 auto 0 0', 
+                  fontSize: '1.05rem', 
+                  padding: '1.2rem 1.5rem',
+                  lineHeight: '1.6'
+                }}
+              >
+                <div className="bi-typing-indicator">
+                  <div className="bi-typing-dot"></div>
+                  <div className="bi-typing-dot"></div>
+                  <div className="bi-typing-dot"></div>
+                </div>
+              </div>
             </div>
           )}
         </div>

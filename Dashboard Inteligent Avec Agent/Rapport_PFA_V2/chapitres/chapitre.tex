@@ -1,0 +1,127 @@
+%==============================================================================
+% CHAPITRE 2 : ÉTAT DE L'ART ET ANALYSE
+%==============================================================================
+\chapter{État de l'art et Analyse}
+
+\section{Analyse fonctionnelle}
+
+\subsection{Acteurs du système}
+
+Le système SmartBI identifie un acteur principal :
+
+\textbf{L'utilisateur métier} : il s'agit d'un décideur, d'un analyste ou de tout professionnel souhaitant explorer des données sans compétences techniques en SQL ou en visualisation de données. Il interagit avec le système via une interface web, en chargeant des fichiers de données ou en posant des questions en langage naturel.
+
+\subsection{Cas d'utilisation}
+
+Nous avons identifié cinq cas d'utilisation principaux, résumés dans le tableau~\ref{tab:cas-utilisation} et illustrés par le diagramme de la figure~\ref{fig:usecase}.
+
+\begin{table}[H]
+\centering
+\caption{Cas d'utilisation du système SmartBI}
+\label{tab:cas-utilisation}
+\begin{tabularx}{\textwidth}{>{\bfseries}p{0.8cm} p{4cm} X}
+\toprule
+\textbf{N°} & \textbf{Cas d'utilisation} & \textbf{Description} \\
+\midrule
+UC1 & Charger un fichier de données & L'utilisateur charge un fichier CSV ou XLSX via une zone de glisser-déposer. Le système ingère les données, les normalise et affiche un rapport de santé. \\
+UC2 & Consulter le tableau de bord global & L'utilisateur visualise un résumé exécutif de la santé des données : nombre de lignes, colonnes, taux de complétude, colonnes à risque, statistiques par colonne. \\
+UC3 & Explorer les insights générés & L'utilisateur consulte un tableau de bord généré automatiquement par les agents IA, composé de KPIs et de graphiques interactifs, avec filtrage par période. \\
+UC4 & Dialoguer avec l'assistant IA & L'utilisateur pose une question analytique en langage naturel et reçoit une réponse sous forme de visualisations intégrées dans le fil de conversation. \\
+UC5 & Filtrer par période & L'utilisateur sélectionne une période temporelle (7 jours, 30 jours, 90 jours, 1 an, etc.) pour affiner les indicateurs affichés. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Diagramme de cas d'utilisation}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    actor/.style={draw, circle, minimum size=1cm, fill=bleuUM5!10, thick},
+    usecase/.style={draw, ellipse, minimum width=3.5cm, minimum height=1.2cm, fill=bg, thick, align=center, font=\small},
+    system/.style={draw, dashed, rounded corners=10pt, inner sep=15pt, fill=bleuUM5!3}
+]
+\node[actor] (user) at (0,0) {\textbf{Utilisateur}};
+
+\node[usecase] (uc1) at (6,3) {Charger un fichier\\(CSV/XLSX)};
+\node[usecase] (uc2) at (6,1.5) {Consulter le tableau\\de bord global};
+\node[usecase] (uc3) at (6,0) {Explorer les\\insights générés};
+\node[usecase] (uc4) at (6,-1.5) {Dialoguer avec\\l'assistant IA};
+\node[usecase] (uc5) at (6,-3) {Filtrer par période};
+
+\begin{scope}[shift={(6,0)}]
+\node[system, fit=(uc1)(uc2)(uc3)(uc4)(uc5)] {};
+\end{scope}
+
+\draw[-{Stealth}] (user) -- (uc1);
+\draw[-{Stealth}] (user) -- (uc2);
+\draw[-{Stealth}] (user) -- (uc3);
+\draw[-{Stealth}] (user) -- (uc4);
+\draw[-{Stealth}] (user) -- (uc5);
+\end{tikzpicture}
+\caption{Diagramme de cas d'utilisation du système SmartBI}
+\label{fig:usecase}
+\end{figure}
+
+\section{Étude de l'existant}
+
+\subsection{Outils de BI traditionnels}
+
+Les solutions de BI traditionnelles dominent le marché depuis plus d'une décennie. Le tableau~\ref{tab:bi-tools} compare les principales solutions disponibles.
+
+\begin{table}[H]
+\centering
+\caption{Comparaison des outils de BI traditionnels}
+\label{tab:bi-tools}
+\begin{tabularx}{\textwidth}{>{\bfseries}p{2.5cm} X p{2cm} p{2cm}}
+\toprule
+\textbf{Outil} & \textbf{Points forts} & \textbf{Complexité} & \textbf{Coût} \\
+\midrule
+Power BI & Intégration Microsoft, DAX puissant, communauté large & Élevée & Licence Pro \\
+Tableau & Visualisations avancées, connecteurs multiples & Moyenne & Licence élevée \\
+Qlik Sense & Moteur associatif, exploration libre & Moyenne & Licence Pro \\
+Looker Studio & Gratuit, intégration Google & Faible & Gratuit / Cloud \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Ces outils présentent tous une limite commune : ils exigent de l'utilisateur une connaissance préalable de la structure des données et une maîtrise des outils de requêtage et de visualisation.
+
+\subsection{Solutions de BI générative}
+
+Plusieurs solutions émergentes tentent d'intégrer des capacités de langage naturel dans les outils de BI :
+
+\textbf{Julius AI} et \textbf{ChatGPT Code Interpreter} permettent d'analyser des données via des conversations en langage naturel, mais reposent exclusivement sur des API cloud propriétaires, ce qui pose des problèmes de confidentialité pour les données sensibles.
+
+\textbf{Microsoft Copilot for Power BI} intègre des capacités de génération de rapports via des prompts, mais reste limité à l'écosystème Microsoft et nécessite une licence Premium coûteuse.
+
+\textbf{Les approches académiques Text-to-SQL} telles que DIN-SQL et DAIL-SQL ont démontré des performances prometteuses sur des benchmarks standardisés (Spider), mais restent cantonnées à la génération de requêtes sans production de visualisations structurées.
+
+\subsection{Positionnement de SmartBI}
+
+SmartBI se distingue des solutions existantes par plusieurs caractéristiques :
+
+\begin{itemize}[leftmargin=2cm]
+    \item \textbf{Pipeline complet} : de l'ingestion des données à la visualisation interactive, en une seule opération.
+    \item \textbf{Exécution locale} : les modèles de langage sont exécutés sur la machine de l'utilisateur via Ollama, sans transfert de données vers le cloud.
+    \item \textbf{Architecture multi-agents} : séparation claire des responsabilités (analyse, requêtage, design) avec mécanisme d'auto-correction.
+    \item \textbf{Double mode d'interaction} : chargement automatique de fichiers et dialogue en langage naturel.
+\end{itemize}
+
+\section{Analyse non fonctionnelle}
+
+\subsection{Exigences de performance}
+
+Le système doit respecter les contraintes de performance suivantes. Le temps d'ingestion d'un fichier de 10~000 lignes ne doit pas excéder 5 secondes. Le temps de génération d'un tableau de bord par le pipeline d'agents doit rester inférieur à 60 secondes pour un jeu de données de taille modérée (moins de 50~000 lignes). L'interface utilisateur doit être réactive, avec un temps de chargement initial inférieur à 3 secondes sur une connexion locale.
+
+\subsection{Exigences de sécurité}
+
+Les données utilisateur sont traitées exclusivement en local, sans transfert vers des services cloud. Les fichiers uploadés sont limités à 10~Mo pour prévenir les abus. Les noms de colonnes sont normalisés et échappés pour prévenir les injections SQL. Les modèles de langage sont exécutés localement via Ollama, garantissant qu'aucune donnée sensible ne quitte l'infrastructure de l'utilisateur.
+
+\subsection{Exigences de maintenabilité}
+
+L'architecture adopte une séparation claire entre le frontend et le backend via une API REST, facilitant l'évolution indépendante de chaque couche. Le code est écrit en Python (backend) et JavaScript/React (frontend), deux langages largement adoptés disposant de communautés actives. Les prompts des agents IA sont externalisés dans des templates LangChain, permettant leur modification sans altérer la logique du pipeline.
+
+\section{Synthèse}
+
+L'analyse de l'existant révèle un fossé entre les outils de BI traditionnels, puissants mais complexes, et les solutions de BI générative cloud, accessibles mais dépendantes de services tiers. SmartBI vise à combler ce fossé en proposant une approche locale, multi-agents et entièrement automatisée, qui respecte la souveraineté des données tout en offrant une expérience utilisateur intuitive. Le chapitre suivant détaille la conception technique retenue pour atteindre ces objectifs.
